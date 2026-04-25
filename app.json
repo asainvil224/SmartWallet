@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "SmartWallet",
+    "slug": "smartwallet",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.smartwallet.app"
+    },
+    "android": {
+      "package": "com.smartwallet.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#F2F3F5"
+      }
+    }
+  }
+}

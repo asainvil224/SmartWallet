@@ -1,84 +1,113 @@
 import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+
 interface CreditCardProps {
   type: 'cent' | 'mastercard' | 'blue';
   cardholder: string;
   last4: string;
   expires?: string;
-  className?: string;
   onClick?: () => void;
 }
-export function CreditCard({
-  type,
-  cardholder,
-  last4,
-  expires,
-  className = '',
-  onClick
-}: CreditCardProps) {
-  const getBgColor = () => {
-    if (type === 'cent') return 'bg-[#5A5A5A]';
-    if (type === 'mastercard') return 'bg-[#5A5A5A]';
-    if (type === 'blue') return 'bg-[#1E4D8C]';
-    return 'bg-gray-700';
-  };
-  return (
-    <div
-      onClick={onClick}
-      className={`relative w-full h-[220px] rounded-2xl p-6 text-white overflow-hidden shadow-lg ${getBgColor()} ${onClick ? 'cursor-pointer' : ''} ${className}`}>
-      
+
+export function CreditCard({ type, cardholder, last4, expires, onClick }: CreditCardProps) {
+  const bgColor = type === 'blue' ? '#1E4D8C' : '#5A5A5A';
+
+  const inner = (
+    <View style={[styles.inner, { backgroundColor: bgColor }]}>
       {/* Decorative circles */}
-      <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/5 rounded-full" />
-      <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-black/10 rounded-full" />
+      <View style={styles.circleTop} />
+      <View style={styles.circleBottom} />
 
-      <div className="relative h-full flex flex-col justify-between z-10">
-        <div className="flex justify-between items-start">
-          {type === 'cent' &&
-          <>
-              <span className="text-[#39FF14] text-2xl font-bold">$</span>
-              <span className="font-bold tracking-widest text-lg">CENT</span>
+      <View className="flex-1 flex-col justify-between" style={{ zIndex: 1 }}>
+        <View className="flex-row justify-between items-start">
+          {type === 'cent' && (
+            <>
+              <Text style={{ color: '#39FF14', fontSize: 24, fontWeight: 'bold' }}>$</Text>
+              <Text className="font-bold text-lg text-white" style={{ letterSpacing: 4 }}>CENT</Text>
             </>
-          }
-          {type === 'mastercard' &&
-          <div className="flex flex-col">
-              <span className="font-bold text-sm tracking-wider">
-                MASTERCARD
-              </span>
-              <span className="text-sm text-gray-300 font-medium mt-1">
-                Standard
-              </span>
-            </div>
-          }
-          {type === 'blue' &&
-          <div className="flex flex-col">
-              <span className="font-bold text-sm tracking-wider">VISA</span>
-              <span className="text-sm text-blue-200 font-medium mt-1">
-                Platinum
-              </span>
-            </div>
-          }
-        </div>
+          )}
+          {type === 'mastercard' && (
+            <View>
+              <Text className="font-bold text-sm text-white tracking-wider">MASTERCARD</Text>
+              <Text className="text-sm text-gray-300 font-medium mt-1">Standard</Text>
+            </View>
+          )}
+          {type === 'blue' && (
+            <View>
+              <Text className="font-bold text-sm text-white tracking-wider">VISA</Text>
+              <Text className="text-sm text-blue-200 font-medium mt-1">Platinum</Text>
+            </View>
+          )}
+        </View>
 
-        <div className="text-2xl tracking-[0.25em] font-medium mt-6">
+        <Text className="text-2xl font-medium text-white mt-6" style={{ letterSpacing: 4 }}>
           **** **** **** {last4}
-        </div>
+        </Text>
 
-        <div className="flex justify-between items-end mt-4">
-          <div>
-            <div className="text-[10px] text-gray-300 uppercase tracking-wider mb-1">
+        <View className="flex-row justify-between items-end mt-4">
+          <View>
+            <Text className="text-[10px] text-gray-300 uppercase tracking-wider mb-1">
               Cardholder
-            </div>
-            <div className="font-medium text-sm">{cardholder}</div>
-          </div>
-          {expires &&
-          <div className="text-right">
-              <div className="text-[10px] text-gray-300 uppercase tracking-wider mb-1">
+            </Text>
+            <Text className="font-medium text-sm text-white">{cardholder}</Text>
+          </View>
+          {expires && (
+            <View className="items-end">
+              <Text className="text-[10px] text-gray-300 uppercase tracking-wider mb-1">
                 Expires
-              </div>
-              <div className="font-medium text-sm">{expires}</div>
-            </div>
-          }
-        </div>
-      </div>
-    </div>);
+              </Text>
+              <Text className="font-medium text-sm text-white">{expires}</Text>
+            </View>
+          )}
+        </View>
+      </View>
+    </View>
+  );
 
+  if (onClick) {
+    return (
+      <View style={styles.shadow}>
+        <TouchableOpacity activeOpacity={0.9} onPress={onClick}>
+          {inner}
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  return <View style={styles.shadow}>{inner}</View>;
 }
+
+const styles = StyleSheet.create({
+  shadow: {
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  inner: {
+    borderRadius: 16,
+    padding: 24,
+    height: 220,
+    overflow: 'hidden',
+  },
+  circleTop: {
+    position: 'absolute',
+    top: -48,
+    right: -48,
+    width: 192,
+    height: 192,
+    borderRadius: 96,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+  },
+  circleBottom: {
+    position: 'absolute',
+    bottom: -48,
+    left: -48,
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: 'rgba(0,0,0,0.1)',
+  },
+});
