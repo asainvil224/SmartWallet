@@ -1,26 +1,21 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, Animated, Modal, TextInput, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Animated, Modal, TextInput, ScrollView, StyleSheet, LayoutAnimation } from 'react-native';
 import { Header } from '../components/Header';
 import { CreditCard } from '../components/CreditCard';
 import { Plus, Pencil, Trash2, X, ChevronLeft, CreditCard as CardIcon, Calendar, User } from 'lucide-react-native';
 import { AddCardModal } from '../components/AddCardModal';
 import { CardType } from '../components/CreditCard';
-import { WALLET_CARDS } from '../lib/walletCards';
+import { WalletCard } from '../lib/walletCards';
 
 interface MyWalletProps {
   activeTab: string;
   onNavigate: (tab: string) => void;
+  cards: WalletCard[];
+  userId: string;
+  onCardAdded: (card: WalletCard) => void;
+  onCardDeleted: (cardId: string) => void;
+  onCardPromoted: (cardId: string) => void;
 }
-
-interface CardData {
-  id: string;
-  type: CardType;
-  cardholder: string;
-  last4: string;
-  expires?: string;
-}
-
-const initialCards: CardData[] = WALLET_CARDS;
 
 function getCardLabel(type: CardType) {
   const labels: Record<CardType, string> = {
@@ -32,16 +27,16 @@ function getCardLabel(type: CardType) {
     'capital-one-venture':     'Capital One Venture',
     'capital-one-quicksilver': 'Capital One Quicksilver',
     'citi-double':             'Citi Double Cash',
-    'discover':                'Discover it® Cash Back',
+    'discover':                'Discover it Cash Back',
   };
   return labels[type] ?? type;
 }
 
-export function MyWallet({ activeTab, onNavigate }: MyWalletProps) {
+export function MyWallet({ activeTab, onNavigate, cards, userId, onCardAdded, onCardDeleted, onCardPromoted }: MyWalletProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isManageOpen, setIsManageOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
-  const [cards, setCards] = useState<CardData[]>(initialCards);
   const detailOpacity = useRef(new Animated.Value(0)).current;
 
   const expandedCard = cards.find((c) => c.id === expandedCardId) ?? null;
@@ -57,22 +52,28 @@ export function MyWallet({ activeTab, onNavigate }: MyWalletProps) {
     );
   };
 
+  const toggleManageCards = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setIsManageOpen((open) => !open);
+  };
+
   const handleCardClick = (clickedId: string, index: number) => {
     if (index === 0) {
       showDetail(clickedId);
-    } else {
-      setCards((prev) => {
-        const next = [...prev];
-        const [card] = next.splice(index, 1);
-        next.unshift(card);
-        return next;
-      });
+      return;
     }
+
+    onCardPromoted(clickedId);
+  };
+
+  const handleManageCardPress = (cardId: string, index: number) => {
+    if (index > 0) onCardPromoted(cardId);
+    showDetail(cardId);
   };
 
   const handleDeleteCard = () => {
     if (!expandedCardId) return;
-    setCards((prev) => prev.filter((c) => c.id !== expandedCardId));
+    onCardDeleted(expandedCardId);
     hideDetail();
   };
 
@@ -87,7 +88,6 @@ export function MyWallet({ activeTab, onNavigate }: MyWalletProps) {
 
   return (
     <View className="flex-1 bg-[#F2F3F5]">
-      {/* Card detail overlay */}
       {expandedCard && (
         <Animated.View style={[StyleSheet.absoluteFillObject, { opacity: detailOpacity, zIndex: 40, backgroundColor: '#F2F3F5' }]}>
           <View className="flex-row items-center justify-between px-6 pt-6 pb-4">
@@ -160,10 +160,9 @@ export function MyWallet({ activeTab, onNavigate }: MyWalletProps) {
         </Animated.View>
       )}
 
-      {/* Normal wallet view */}
       <Header title="My Wallet" activeTab={activeTab} onNavigate={onNavigate} leftAction={addButton} />
 
-      <View className="px-6 mt-8 flex-1">
+      <ScrollView className="flex-1 px-6 mt-8" contentContainerStyle={{ paddingBottom: 32 }}>
         <View style={{ height: 360, position: 'relative' }}>
           {cards.map((card, index) => (
             <View
@@ -194,11 +193,35 @@ export function MyWallet({ activeTab, onNavigate }: MyWalletProps) {
             </View>
           )}
         </View>
-      </View>
 
-      {isModalOpen && <AddCardModal onClose={() => setIsModalOpen(false)} onCardAdded={() => {}} />}
+        <TouchableOpacity
+          onPress={toggleManageCards}
+          className="mt-2 flex-row items-center justify-center gap-2 py-4 bg-white rounded-2xl shadow-sm"
+          activeOpacity={0.85}
+        >
+          <CardIcon size={17} color="#111827" />
+          <Text className="text-sm font-bold text-gray-900">{isManageOpen ? 'Hide Cards' : 'Manage Cards'}</Text>
+        </TouchableOpacity>
 
-      {/* Edit card modal */}
+        {isManageOpen && (
+          <View className="mt-5 gap-5">
+            {cards.map((card, index) => (
+              <View key={card.id}>
+                <CreditCard
+                  type={card.type}
+                  cardholder={card.cardholder}
+                  last4={card.last4}
+                  expires={card.expires}
+                  onClick={() => handleManageCardPress(card.id, index)}
+                />
+              </View>
+            ))}
+          </View>
+        )}
+      </ScrollView>
+
+      {isModalOpen && <AddCardModal onClose={() => setIsModalOpen(false)} onCardAdded={onCardAdded} userId={userId} />}
+
       {isEditModalOpen && expandedCard && (
         <Modal visible transparent animationType="slide" onRequestClose={() => setIsEditModalOpen(false)}>
           <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}>
@@ -206,8 +229,8 @@ export function MyWallet({ activeTab, onNavigate }: MyWalletProps) {
             <View className="bg-white rounded-t-3xl p-6 pb-10">
               <View className="flex-row justify-between items-center mb-6">
                 <Text className="text-xl font-bold text-gray-900">Edit Card</Text>
-                <TouchableOpacity onPress={() => setIsEditModalOpen(false)} className="p-2 bg-gray-100 rounded-full">
-                  <X size={20} color="#4b5563" />
+                <TouchableOpacity onPress={() => setIsEditModalOpen(false)} className="w-12 h-12 bg-gray-100 rounded-full items-center justify-center">
+                  <X size={22} color="#4b5563" />
                 </TouchableOpacity>
               </View>
               <View className="gap-4">
