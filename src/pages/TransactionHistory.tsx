@@ -8,10 +8,10 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 const transactions = [
-  { id: '1', amount: 74.98, date: 'Oct 12, 2025 at 11:50 AM', status: 'Succeeded', card: 'CENT •••• 4444', rewards: '$1.12' },
-  { id: '2', amount: 9.10, date: 'Oct 12, 2025 at 11:42 AM', status: 'Succeeded', card: 'CENT •••• 4444', rewards: '$0.14' },
-  { id: '3', amount: 31.78, date: 'Oct 12, 2025 at 11:35 AM', status: 'Succeeded', card: 'CENT •••• 4444', rewards: '$0.48' },
-  { id: '4', amount: 65.72, date: 'Oct 12, 2025 at 11:32 AM', status: 'Succeeded', card: 'CENT •••• 4444', rewards: '$0.99' },
+  { id: '1', amount: 74.98, date: 'Oct 12, 2025 at 11:50 AM', status: 'Succeeded', card: 'VISA •••• 4444', rewards: '$1.12' },
+  { id: '2', amount: 9.10, date: 'Oct 12, 2025 at 11:42 AM', status: 'Succeeded', card: 'MASTERCARD •••• 4444', rewards: '$0.14' },
+  { id: '3', amount: 31.78, date: 'Oct 12, 2025 at 11:35 AM', status: 'Succeeded', card: 'VISA •••• 4444', rewards: '$0.48' },
+  { id: '4', amount: 65.72, date: 'Oct 12, 2025 at 11:32 AM', status: 'Succeeded', card: 'MASTERCARD •••• 4444', rewards: '$0.99' },
 ];
 
 interface TransactionHistoryProps {

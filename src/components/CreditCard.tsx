@@ -23,7 +23,7 @@ export function CreditCard({ type, cardholder, last4, expires, onClick }: Credit
           {type === 'cent' && (
             <>
               <Text style={{ color: '#39FF14', fontSize: 24, fontWeight: 'bold' }}>$</Text>
-              <Text className="font-bold text-lg text-white" style={{ letterSpacing: 4 }}>CENT</Text>
+              <Text className="font-bold text-lg text-white" style={{ letterSpacing: 4 }}>SmartWallet</Text>
             </>
           )}
           {type === 'mastercard' && (

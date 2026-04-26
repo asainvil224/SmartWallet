@@ -23,11 +23,11 @@ interface CardData {
 const initialCards: CardData[] = [
   { id: '1', type: 'mastercard', cardholder: 'Jason', last4: '4444' },
   { id: '2', type: 'blue', cardholder: 'Jason', last4: '4444' },
-  { id: '3', type: 'cent', cardholder: 'Jason', last4: '4444', expires: '6/2029' },
+  { id: '3', type: 'smartwallet', cardholder: 'Jason', last4: '4444', expires: '6/2029' },
 ];
 
 function getCardLabel(type: CardType) {
-  if (type === 'cent') return 'CENT';
+  if (type === 'cent') return 'SmartWallet';
   if (type === 'mastercard') return 'Mastercard Standard';
   return 'Visa Platinum';
 }
