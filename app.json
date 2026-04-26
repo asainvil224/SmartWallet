@@ -16,6 +16,7 @@
       "adaptiveIcon": {
         "backgroundColor": "#F2F3F5"
       }
-    }
+    },
+    "plugins": []
   }
 }
