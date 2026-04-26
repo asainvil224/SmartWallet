@@ -4,13 +4,13 @@ import { Header } from '../components/Header';
 import { CreditCard } from '../components/CreditCard';
 import { Plus, Pencil, Trash2, X, ChevronLeft, CreditCard as CardIcon, Calendar, User } from 'lucide-react-native';
 import { AddCardModal } from '../components/AddCardModal';
+import { CardType } from '../components/CreditCard';
+import { WALLET_CARDS } from '../lib/walletCards';
 
 interface MyWalletProps {
   activeTab: string;
   onNavigate: (tab: string) => void;
 }
-
-type CardType = 'cent' | 'mastercard' | 'blue';
 
 interface CardData {
   id: string;
@@ -20,16 +20,21 @@ interface CardData {
   expires?: string;
 }
 
-const initialCards: CardData[] = [
-  { id: '1', type: 'mastercard', cardholder: 'Jason', last4: '4444' },
-  { id: '2', type: 'blue', cardholder: 'Jason', last4: '4444' },
-  { id: '3', type: 'cent', cardholder: 'Jason', last4: '4444', expires: '6/2029' },
-];
+const initialCards: CardData[] = WALLET_CARDS;
 
 function getCardLabel(type: CardType) {
-  if (type === 'cent') return 'SmartWallet';
-  if (type === 'mastercard') return 'Mastercard Standard';
-  return 'Visa Platinum';
+  const labels: Record<CardType, string> = {
+    'cent':                    'SmartWallet',
+    'chase-sapphire':          'Chase Sapphire Reserve',
+    'chase-freedom':           'Chase Freedom Unlimited',
+    'amex-gold':               'Amex Gold Card',
+    'amex-platinum':           'Amex Platinum Card',
+    'capital-one-venture':     'Capital One Venture',
+    'capital-one-quicksilver': 'Capital One Quicksilver',
+    'citi-double':             'Citi Double Cash',
+    'discover':                'Discover it® Cash Back',
+  };
+  return labels[type] ?? type;
 }
 
 export function MyWallet({ activeTab, onNavigate }: MyWalletProps) {
@@ -191,7 +196,7 @@ export function MyWallet({ activeTab, onNavigate }: MyWalletProps) {
         </View>
       </View>
 
-      {isModalOpen && <AddCardModal onClose={() => setIsModalOpen(false)} />}
+      {isModalOpen && <AddCardModal onClose={() => setIsModalOpen(false)} onCardAdded={() => {}} />}
 
       {/* Edit card modal */}
       {isEditModalOpen && expandedCard && (

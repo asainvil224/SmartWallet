@@ -4,6 +4,7 @@ import { Header } from '../components/Header';
 import { CreditCard } from '../components/CreditCard';
 import { Wifi, X } from 'lucide-react-native';
 import { useStripePayment } from '../hooks/useStripePayment';
+import { WALLET_CARDS } from '../lib/walletCards';
 
 const DEMO_USER_ID = 'demo-user-123';
 
@@ -24,7 +25,7 @@ export function MakePayment({ activeTab, onNavigate }: MakePaymentProps) {
     setSuccess(false);
     setRecommendation(null);
     setModalVisible(true);
-    const result = await initiateSimulated(DEMO_USER_ID);
+    const result = await initiateSimulated(DEMO_USER_ID, WALLET_CARDS);
     setRecommendation(result);
     setIntentId(result.paymentIntentId);
   };

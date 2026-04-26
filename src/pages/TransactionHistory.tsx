@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, LayoutAnimation, Platform, UI
 import { Header } from '../components/Header';
 import { RefreshCw, Check } from 'lucide-react-native';
 import { supabase } from '../lib/supabase';
+import { WALLET_CARDS } from '../lib/walletCards';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -16,16 +17,11 @@ type Transaction = {
   currency: string;
   merchant_name: string;
   merchant_category: string;
+  card_name: string | null;
   status: string;
   created_at: string;
   stripe_payment_intent_id: string;
   used_recommended: boolean;
-  card: {
-    card_name: string;
-    last_four: string;
-    network: string;
-    benefits: Record<string, number>;
-  } | null;
 };
 
 function formatDate(iso: string) {
@@ -35,9 +31,11 @@ function formatDate(iso: string) {
   });
 }
 
-function calcRewards(amount: number, category: string, benefits: Record<string, number> | undefined) {
-  const rate = benefits?.[category] ?? 1;
-  return { dollars: ((amount * rate) / 100).toFixed(2), rate };
+function calcRewards(amount: number, category: string, cardName: string | null) {
+  const card = WALLET_CARDS.find((c) => c.card_name === cardName);
+  const rate = card?.benefits?.[category] ?? 1;
+  const dollars = ((amount * rate) / 100).toFixed(2);
+  return { dollars, rate };
 }
 
 interface TransactionHistoryProps {
@@ -54,23 +52,16 @@ export function TransactionHistory({ activeTab, onNavigate }: TransactionHistory
     setLoading(true);
     const { data, error } = await supabase
       .from('transactions')
-      .select(`
-        id, amount, currency, merchant_name, merchant_category,
-        status, created_at, stripe_payment_intent_id, used_recommended,
-        card:card_id ( card_name, last_four, network, benefits )
-      `)
+      .select('id, amount, currency, merchant_name, merchant_category, card_name, status, created_at, stripe_payment_intent_id, used_recommended')
       .eq('user_id', DEMO_USER_ID)
       .order('created_at', { ascending: false });
 
-    if (!error && data) setTransactions(data as unknown as Transaction[]);
+    if (!error && data) setTransactions(data as Transaction[]);
     setLoading(false);
   }, []);
 
-  useEffect(() => {
-    fetchTransactions();
-  }, [fetchTransactions]);
+  useEffect(() => { fetchTransactions(); }, [fetchTransactions]);
 
-  // Re-fetch whenever the history tab becomes active
   useEffect(() => {
     if (activeTab === 'history') fetchTransactions();
   }, [activeTab, fetchTransactions]);
@@ -111,10 +102,7 @@ export function TransactionHistory({ activeTab, onNavigate }: TransactionHistory
 
         <View className="gap-4">
           {transactions.map((tx) => {
-            const { dollars, rate } = calcRewards(tx.amount, tx.merchant_category, tx.card?.benefits);
-            const cardLabel = tx.card
-              ? `${tx.card.network?.toUpperCase()} •••• ${tx.card.last_four}`
-              : 'Unknown card';
+            const { dollars, rate } = calcRewards(tx.amount, tx.merchant_category, tx.card_name);
 
             return (
               <TouchableOpacity
@@ -158,16 +146,16 @@ export function TransactionHistory({ activeTab, onNavigate }: TransactionHistory
                     </View>
                     <View className="flex-row justify-between">
                       <Text className="text-gray-500 font-medium text-sm">Card Used</Text>
-                      <Text className="font-bold text-gray-900 text-sm">{cardLabel}</Text>
+                      <Text className="font-bold text-gray-900 text-sm">
+                        {tx.card_name ?? 'Unknown card'}
+                      </Text>
                     </View>
-                    {tx.card && (
-                      <View className="flex-row justify-between">
-                        <Text className="text-gray-500 font-medium text-sm">{tx.card.card_name}</Text>
-                        <Text className="text-gray-400 text-sm font-medium">
-                          {tx.used_recommended ? '✓ Recommended' : 'Manual pick'}
-                        </Text>
-                      </View>
-                    )}
+                    <View className="flex-row justify-between">
+                      <Text className="text-gray-500 font-medium text-sm">Recommendation</Text>
+                      <Text className="text-sm font-medium" style={{ color: tx.used_recommended ? '#39FF14' : '#9ca3af' }}>
+                        {tx.used_recommended ? '✓ Followed' : 'Not followed'}
+                      </Text>
+                    </View>
                     <View className="flex-row justify-between items-center">
                       <Text className="text-gray-500 font-medium text-sm">Rewards Earned</Text>
                       <View className="flex-row items-center gap-1">

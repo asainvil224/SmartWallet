@@ -95,15 +95,15 @@ export function useStripePayment() {
     }>;
   }
 
-  // Calls /simulate-payment — backend picks a random merchant, no user input needed
-  async function initiateSimulated(userId: string): Promise<PaymentResult & { merchantName: string; amount: number }> {
+  // Calls /simulate-payment — backend picks a random merchant, recommends from the provided wallet cards
+  async function initiateSimulated(userId: string, cards: object[]): Promise<PaymentResult & { merchantName: string; amount: number }> {
     setLoading(true);
     setError(null);
     try {
       const res = await fetch(`${API_URL}/simulate-payment`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({ userId, cards }),
       });
       if (!res.ok) throw new Error(`Server error: ${res.status}`);
       const data = await res.json();
